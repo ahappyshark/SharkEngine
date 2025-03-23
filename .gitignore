@@ -1,0 +1,34 @@
+# Build results
+bin/
+obj/
+
+# Visual Studio artifacts
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# VS Code settings
+.vscode/
+
+# Rider/JetBrains files
+.idea/
+*.sln.iml
+
+# OS junk
+Thumbs.db
+.DS_Store
+
+# Logs and coverage
+*.log
+TestResults/
+coverage/
+
+# NuGet stuff
+*.nupkg
+packages/
+
+# If you ever generate docs, exclude them
+docs/**/bin/
+docs/**/obj/
