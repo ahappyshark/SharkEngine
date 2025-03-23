@@ -30,6 +30,7 @@ namespace SharkEngine.Scenes
 
         public override void Draw()
         {
+            Raylib.ClearBackground(Color.BLACK);
             Raylib.DrawCircle((int)x, (int)y, 20, Color.YELLOW);
             Raylib.DrawText("Test Scene", 10, 10, 20, Color.WHITE);
         }

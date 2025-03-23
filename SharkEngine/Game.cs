@@ -34,10 +34,7 @@ namespace SharkEngine
 
                 // Draw
                 Raylib.BeginDrawing();
-                Raylib.ClearBackground(Color.BLACK);
-
                 sceneManager.Draw();
-
                 Raylib.EndDrawing();
             }
         }
