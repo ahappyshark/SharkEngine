@@ -20,19 +20,19 @@ namespace SharkEngine.Scenes
         }
 
         public override void Update(float deltaTime)
-        {
-            // Movement logic
-            if (Input.IsKeyDown(KeyboardKey.KEY_RIGHT)) x += 200 * deltaTime;
-            if (Input.IsKeyDown(KeyboardKey.KEY_LEFT)) x -= 200 * deltaTime;
-            if (Input.IsKeyDown(KeyboardKey.KEY_DOWN)) y += 200 * deltaTime;
-            if (Input.IsKeyDown(KeyboardKey.KEY_UP)) y -= 200 * deltaTime;
+        {            
+            // Move the "player" with arrow keys
+            if (Raylib.IsKeyDown(KeyboardKey.Right)) x += 200 * deltaTime;
+            if (Raylib.IsKeyDown(KeyboardKey.Left)) x -= 200 * deltaTime;
+            if (Raylib.IsKeyDown(KeyboardKey.Down)) y += 200 * deltaTime;
+            if (Raylib.IsKeyDown(KeyboardKey.Up)) y -= 200 * deltaTime;
         }
 
         public override void Draw()
         {
-            Raylib.ClearBackground(Color.BLACK);
-            Raylib.DrawCircle((int)x, (int)y, 20, Color.YELLOW);
-            Raylib.DrawText("Test Scene", 10, 10, 20, Color.WHITE);
+            Raylib.ClearBackground(Color.Black);
+            Raylib.DrawCircle((int)x, (int)y, 20, Color.Yellow);
+            Raylib.DrawText("Test Scene", 10, 10, 20, Color.White);
         }
     }
 }

@@ -7,20 +7,15 @@ namespace SharkEngine
 {
     public class Game : IDisposable
     {
-        private const int ScreenWidth = 800;
-        private const int ScreenHeight = 600;
-        private const int TargetFps = 60;
-
         private SceneManager sceneManager;
 
         public Game()
         {
-            Raylib.InitWindow(ScreenWidth, ScreenHeight, "SharkEngine Ritual");
-            Raylib.SetTargetFPS(TargetFps);
+            Raylib.InitWindow(GameConfig.ScreenWidth, GameConfig.ScreenHeight, "SharkEngine Ritual");
+            Raylib.SetTargetFPS(GameConfig.TargetFps);
 
-            // Initialize SceneManager with an initial Scene
             sceneManager = new SceneManager();
-            sceneManager.ChangeScene(new TestScene());
+            sceneManager.ChangeScene(new LightingScene());
         }
 
         public void Run()
@@ -29,11 +24,10 @@ namespace SharkEngine
             {
                 float deltaTime = Raylib.GetFrameTime();
 
-                // Update the current scene
                 sceneManager.Update(deltaTime);
 
-                // Draw
                 Raylib.BeginDrawing();
+                Raylib.ClearBackground(Color.Black); // Global clear
                 sceneManager.Draw();
                 Raylib.EndDrawing();
             }
