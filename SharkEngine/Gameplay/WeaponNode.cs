@@ -7,9 +7,7 @@ namespace SharkEngine.Gameplay
     {
         public float FireCooldown = 2f;
         public float EnergyCostPerShot = 3f;
-
         private float timeSinceLastFire = 0f;
-
         public WeaponNode(LightNode? parent = null)
             : base(parent)
         {
@@ -26,17 +24,14 @@ namespace SharkEngine.Gameplay
             };
         }
         public override float GetChildRadius(NodeType childType) => 50f;
-
         public override float GetEnergyFromSelf(float deltaTime)
         {
             return 0f; // Doesn't generate energy
         }
-
         public override float GetEnergyOutput(LightNode target, float deltaTime)
         {
             return 0f; // Doesn't share energy with others (for now)
         }
-
         public override void Update(float deltaTime)
         {
             base.Update(deltaTime);
@@ -58,7 +53,6 @@ namespace SharkEngine.Gameplay
                 }
             }
         }
-
         public override void Draw()
         {
             Raylib.DrawCircleGradient((int)Position.X, (int)Position.Y, AnimatedRadius, CurrentColor, Color.Blank);
@@ -71,7 +65,6 @@ namespace SharkEngine.Gameplay
                 Raylib.DrawLineEx(Parent.Position, Position, BeamThickness, beamColor);
             }
         }
-
         private Color BlendColors(Color a, Color b, float t)
         {
             return new Color(
@@ -80,6 +73,10 @@ namespace SharkEngine.Gameplay
                 (int)(a.B + (b.B - a.B) * t),
                 (int)(a.A + (b.A - a.A) * t)
             );
+        }
+        public override void RepositionChildren()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -7,7 +7,6 @@ namespace SharkEngine.Gameplay
     {
         public float MaxStorage { get; set; } = 20f;
         public float RechargeRate { get; set; } = 1f;
-
         public CapacitorNode(LightNode? parent = null)
             : base(parent)
         {
@@ -24,13 +23,11 @@ namespace SharkEngine.Gameplay
             };
         }
         public override float GetChildRadius(NodeType childType) => 50f;
-
         public override float GetEnergyFromSelf(float deltaTime)
         {
             // Capacitor doesn't generate energy
             return 0f;
         }
-
         public override float GetEnergyOutput(LightNode target, float deltaTime)
         {
             float request = RechargeRate * deltaTime;
@@ -38,7 +35,6 @@ namespace SharkEngine.Gameplay
             EnergyReserve -= provided;
             return provided;
         }
-
         public override void Update(float deltaTime)
         {
             base.Update(deltaTime);
@@ -50,7 +46,6 @@ namespace SharkEngine.Gameplay
                 EnergyReserve = MathF.Min(EnergyReserve + incoming, MaxStorage);
             }
         }
-
         public override void Draw()
         {
             Raylib.DrawCircleGradient((int)Position.X, (int)Position.Y, AnimatedRadius, CurrentColor, Color.Blank);
@@ -63,7 +58,6 @@ namespace SharkEngine.Gameplay
                 Raylib.DrawLineEx(Parent.Position, Position, BeamThickness, beamColor);
             }
         }
-
         private Color BlendColors(Color a, Color b, float t)
         {
             return new Color(
@@ -72,6 +66,10 @@ namespace SharkEngine.Gameplay
                 (int)(a.B + (b.B - a.B) * t),
                 (int)(a.A + (b.A - a.A) * t)
             );
+        }
+        public override void RepositionChildren()
+        {
+            throw new NotImplementedException();
         }
     }
 }

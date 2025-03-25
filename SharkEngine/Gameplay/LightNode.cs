@@ -87,23 +87,6 @@ namespace SharkEngine.Gameplay
                 }
             }
         }
-        public int CountStarDescendants()
-        {
-            int count = 0;
-
-            foreach (var child in Children)
-            {
-                if (child.Type == NodeType.Star)
-                    count++;
-
-                // Recursively check this child's children
-                if (child is StarNode star)
-                    count += star.CountStarDescendants();
-            }
-
-            return count;
-        }
-
 
         public virtual void Destroy()
         {
@@ -112,23 +95,7 @@ namespace SharkEngine.Gameplay
                 child.Destroy();
             Children.Clear();
         }
-        public virtual void RepositionChildren()
-        {
-            float angleStep = 360f / Children.Count;
-            float angleOffset = 0f;
-
-            for (int i = 0; i < Children.Count; i++)
-            {
-                var child = Children[i];
-                float angle = angleOffset + i * angleStep;
-                float radians = MathF.PI * angle / 180f;
-                Vector2 offset = new Vector2(MathF.Cos(radians), MathF.Sin(radians)) * ParentRadius;
-                child.Position = Position + offset;
-
-                child.RepositionChildren(); // recurse!
-            }
-        }
-
+        public abstract void RepositionChildren();
         public virtual bool IsActive() {
             return CurrentState == NodeState.Active;
         }
