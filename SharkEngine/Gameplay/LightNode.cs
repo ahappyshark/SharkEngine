@@ -1,4 +1,5 @@
 using System.Numerics;
+using Raylib_cs;
 
 namespace SharkEngine.Gameplay
 {
@@ -10,17 +11,28 @@ namespace SharkEngine.Gameplay
         Dead
     }
 
-    public class LightNode
+    public abstract class LightNode
     {
         public Vector2 Position { get; }
         public LightNode? Parent { get; private set; }
         public List<LightNode> Children { get; } = new();
 
-        public NodeState State { get; private set; } = NodeState.Inactive;
+        public NodeState CurrentState { get; protected set; } = NodeState.Inactive;
+        public Color CurrentColor => StateColors.TryGetValue(CurrentState, out var color)
+            ? color
+            : Color.LightGray;
 
-        public float EnergyProduction { get; private set; } = 1f;
-        public float EnergyReserve { get; private set; } = 0f;
-        public float IgnitionCost { get; } = 5f;
+        public Dictionary<NodeState, Color> StateColors { get; protected set; } = new();
+
+        public float EnergyReserve { get; protected set; }
+        public float IgnitionCost { get; protected set; }
+
+        public float AnimatedRadius { get; protected set; }
+        public float BaseRadius { get; protected set; }
+        public float PulseTime { get; protected set; }
+        public float BeamPulseTime { get; protected set; }
+        public float BeamAlpha { get; protected set; }
+        public float BeamThickness { get; protected set; }
 
         public LightNode(Vector2 position, LightNode? parent = null)
         {
@@ -31,55 +43,60 @@ namespace SharkEngine.Gameplay
 
         public bool IsConnectedToRoot()
         {
-            return State == NodeState.Active && (Parent == null || Parent.IsConnectedToRoot());
+            return CurrentState == NodeState.Active && (Parent == null || Parent.IsConnectedToRoot());
         }
 
         public void Ignite()
         {
-            if (State == NodeState.Inactive && (Parent == null || Parent.State == NodeState.Active))
+            if (CurrentState == NodeState.Inactive && (Parent == null || Parent.CurrentState == NodeState.Active))
             {
-                State = NodeState.Igniting;
-                EnergyReserve = IgnitionCost;
+                CurrentState = NodeState.Igniting;
+                EnergyReserve = 0f;
             }
         }
 
-        public void Update(float deltaTime)
+        public virtual void Update(float deltaTime)
         {
-            if (State == NodeState.Igniting)
-            {
-                if (Parent == null)
-                {
-                    EnergyReserve += EnergyProduction * deltaTime;
-                }
-                else
-                {
-                    EnergyReserve += Parent.EnergyProduction * deltaTime;
-                }
+            PulseTime += deltaTime;
+            BeamPulseTime += deltaTime;
 
+            AnimatedRadius = BaseRadius + 20f * MathF.Sin(PulseTime * 2f);
+            BeamAlpha = 0.5f + 0.5f * MathF.Sin(BeamPulseTime * 4f);
+            BeamThickness = 4f + 2f * MathF.Sin(BeamPulseTime * 4f);
+
+            if (CurrentState == NodeState.Igniting)
+            {
+                float input = Parent == null
+                    ? GetEnergyFromSelf(deltaTime)
+                    : Parent.GetEnergyOutput(this, deltaTime);
+
+                EnergyReserve += input;
 
                 if (EnergyReserve >= IgnitionCost)
                 {
                     EnergyReserve = 0f;
-                    State = NodeState.Active;
+                    CurrentState = NodeState.Active;
                 }
             }
-            else if (State == NodeState.Active)
-            {
-                EnergyReserve += EnergyProduction * deltaTime;
-                if (EnergyReserve > 10f) { EnergyReserve = 10f; }
-                // Cap or decay logic can go here
-            }
-
         }
 
-        public void Destroy()
+        public virtual void Destroy()
         {
-            State = NodeState.Dead;
+            CurrentState = NodeState.Dead;
             foreach (var child in Children)
-            {
                 child.Destroy();
-            }
             Children.Clear();
         }
+
+        public virtual bool IsActive() {
+            return CurrentState == NodeState.Active;
+        }
+        protected virtual bool CanGenerate()
+        {
+            return Parent == null || CurrentState == NodeState.Active;
+        }
+        public abstract float GetEnergyFromSelf(float deltaTime);
+        public abstract float GetEnergyOutput(LightNode target, float deltaTime);
+        public abstract void Draw();
     }
 }
