@@ -10,9 +10,10 @@ namespace SharkEngine.Gameplay
 
         private float timeSinceLastFire = 0f;
 
-        public WeaponNode(Vector2 position, LightNode? parent = null)
-            : base(position, parent)
+        public WeaponNode(LightNode? parent = null)
+            : base(parent)
         {
+            Type = NodeType.Weapon;
             BaseRadius = 50f;
             EnergyReserve = 0f;
             IgnitionCost = 5f;
@@ -24,6 +25,7 @@ namespace SharkEngine.Gameplay
                 { NodeState.Dead, Color.Gray }
             };
         }
+        public override float GetChildRadius(NodeType childType) => 50f;
 
         public override float GetEnergyFromSelf(float deltaTime)
         {

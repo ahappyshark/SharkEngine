@@ -8,9 +8,10 @@ namespace SharkEngine.Gameplay
         public float MaxStorage { get; set; } = 20f;
         public float RechargeRate { get; set; } = 1f;
 
-        public CapacitorNode(Vector2 position, LightNode? parent = null)
-            : base(position, parent)
+        public CapacitorNode(LightNode? parent = null)
+            : base(parent)
         {
+            Type = NodeType.Capacitor;
             BaseRadius = 50f;
             EnergyReserve = 0f;
             IgnitionCost = 5f;
@@ -22,6 +23,7 @@ namespace SharkEngine.Gameplay
                 { NodeState.Dead, Color.Gray }
             };
         }
+        public override float GetChildRadius(NodeType childType) => 50f;
 
         public override float GetEnergyFromSelf(float deltaTime)
         {

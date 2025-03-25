@@ -13,10 +13,11 @@ namespace SharkEngine.Gameplay
 
     public abstract class LightNode
     {
-        public Vector2 Position { get; }
+        public Vector2 Position { get; protected set; }
+        public NodeType Type { get; protected set; }
+        public float ParentRadius { get; private set; }
         public LightNode? Parent { get; private set; }
         public List<LightNode> Children { get; } = new();
-
         public NodeState CurrentState { get; protected set; } = NodeState.Inactive;
         public Color CurrentColor => StateColors.TryGetValue(CurrentState, out var color)
             ? color
@@ -34,11 +35,12 @@ namespace SharkEngine.Gameplay
         public float BeamAlpha { get; protected set; }
         public float BeamThickness { get; protected set; }
 
-        public LightNode(Vector2 position, LightNode? parent = null)
+        public LightNode(LightNode? parent = null)
         {
-            Position = position;
             Parent = parent;
             parent?.Children.Add(this);
+            ParentRadius = parent?.GetChildRadius(this.Type) ?? 100f;
+            parent?.RepositionChildren();
         }
 
         public bool IsConnectedToRoot()
@@ -87,6 +89,22 @@ namespace SharkEngine.Gameplay
                 child.Destroy();
             Children.Clear();
         }
+        public void RepositionChildren()
+        {
+            float angleStep = 360f / Children.Count;
+            float angleOffset = 0f;
+
+            for (int i = 0; i < Children.Count; i++)
+            {
+                var child = Children[i];
+                float angle = angleOffset + i * angleStep;
+                float radians = MathF.PI * angle / 180f;
+                Vector2 offset = new Vector2(MathF.Cos(radians), MathF.Sin(radians)) * ParentRadius;
+                child.Position = Position + offset;
+
+                child.RepositionChildren(); // recurse!
+            }
+        }
 
         public virtual bool IsActive() {
             return CurrentState == NodeState.Active;
@@ -95,6 +113,7 @@ namespace SharkEngine.Gameplay
         {
             return Parent == null || CurrentState == NodeState.Active;
         }
+        public virtual float GetChildRadius(NodeType childType) => 100f;
         public abstract float GetEnergyFromSelf(float deltaTime);
         public abstract float GetEnergyOutput(LightNode target, float deltaTime);
         public abstract void Draw();

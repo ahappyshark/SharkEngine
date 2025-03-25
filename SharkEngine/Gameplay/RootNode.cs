@@ -3,15 +3,15 @@ using Raylib_cs;
 
 namespace SharkEngine.Gameplay
 {
-    public class StarNode : LightNode
+    public class RootNode : LightNode
     {
         public float EnergyProductionRate { get; set; } = 2f;
         public float MaxStorage { get; set; } = 10f;
 
-        public StarNode(LightNode? parent = null)
+        public RootNode(LightNode? parent = null)
             : base(parent)
         {
-            Type = NodeType.Star;
+            Type = NodeType.Root;
             BaseRadius = 100f;
             EnergyReserve = 0f;
             IgnitionCost = 10f;
@@ -25,8 +25,6 @@ namespace SharkEngine.Gameplay
             };
         }
         public override float GetChildRadius(NodeType childType) => 100f;
-        
-
         public override float GetEnergyFromSelf(float deltaTime)
         {
             if (!CanGenerate()) return 0f;
