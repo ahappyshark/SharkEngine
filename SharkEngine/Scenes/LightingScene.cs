@@ -7,13 +7,8 @@ namespace SharkEngine.Scenes
 {
     public class LightingScene : Scene
     {
-        LightNode rootNode;
-        private Camera2D camera;
-        private float cameraSpeed = 300f;
-        private float cameraZoom = 1.0f;
-        private const float ZoomSpeed = 0.1f;
-        private const float MinZoom = 0.25f;
-        private const float MaxZoom = 3.0f;
+        private LightNode rootNode;
+        private GameCamera gameCamera;
 
         private RenderTexture2D sceneTexture;
         private RenderTexture2D lightMap;
@@ -36,17 +31,11 @@ namespace SharkEngine.Scenes
 
             originPosition = new Vector2(GameConfig.ScreenWidth / 2f, GameConfig.ScreenHeight / 2f);
 
+            gameCamera = new GameCamera();
+
             rootNode = NodeFactory.CreateNode(NodeType.Star, originPosition);
             rootNode.Ignite();
             rootNode.Update(999);
-
-            camera = new Camera2D
-            {
-                Offset = new Vector2(GameConfig.ScreenWidth / 2f, GameConfig.ScreenHeight / 2f),
-                Target = originPosition,
-                Rotation = 0.0f,
-                Zoom = 1.0f
-            };
         }
 
         public override void Unload()
@@ -57,10 +46,10 @@ namespace SharkEngine.Scenes
 
         public override void Update(float deltaTime)
         {
-            HandleCameraMovement(deltaTime);
+            gameCamera.Update(deltaTime);
             UpdateNodeTree(rootNode, deltaTime);
 
-            Vector2 mouseWorld = Raylib.GetScreenToWorld2D(Raylib.GetMousePosition(), camera);
+            Vector2 mouseWorld = Raylib.GetScreenToWorld2D(Raylib.GetMousePosition(), gameCamera.Camera);
             previewPosition = mouseWorld;
 
             LightNode? nearest = FindNearestActiveNode(rootNode, mouseWorld, MaxIgniteDistance);
@@ -143,40 +132,7 @@ namespace SharkEngine.Scenes
 
             return total;
         }
-        private void HandleCameraMovement(float deltaTime)
-        {
-            Vector2 cameraMove = Vector2.Zero;
-
-            if (Raylib.IsKeyDown(KeyboardKey.Right) || Raylib.IsKeyDown(KeyboardKey.D)) cameraMove.X += 1;
-            if (Raylib.IsKeyDown(KeyboardKey.Left) || Raylib.IsKeyDown(KeyboardKey.A)) cameraMove.X -= 1;
-            if (Raylib.IsKeyDown(KeyboardKey.Down) || Raylib.IsKeyDown(KeyboardKey.S)) cameraMove.Y += 1;
-            if (Raylib.IsKeyDown(KeyboardKey.Up) || Raylib.IsKeyDown(KeyboardKey.W)) cameraMove.Y -= 1;
-
-            if (cameraMove != Vector2.Zero)
-                camera.Target += cameraMove * cameraSpeed * deltaTime;
-            
-            float wheel = Raylib.GetMouseWheelMove();
-
-            
-            if (wheel != 0)
-            {
-                // 1. Get the mouse position in world space before zoom
-                Vector2 mouseScreen = Raylib.GetMousePosition();
-                Vector2 mouseWorldBefore = Raylib.GetScreenToWorld2D(mouseScreen, camera);
-
-                // 2. Update zoom factor
-                cameraZoom += wheel * ZoomSpeed;
-                cameraZoom = Math.Clamp(cameraZoom, MinZoom, MaxZoom);
-                camera.Zoom = cameraZoom;
-
-                // 3. Get the world position under the mouse *after* zoom
-                Vector2 mouseWorldAfter = Raylib.GetScreenToWorld2D(mouseScreen, camera);
-
-                // 4. Adjust camera target to compensate
-                Vector2 delta = mouseWorldBefore - mouseWorldAfter;
-                camera.Target += delta;
-            }
-        }
+        
 
         public override void Draw()
         {
@@ -190,7 +146,7 @@ namespace SharkEngine.Scenes
             Raylib.BeginTextureMode(lightMap);
             Raylib.ClearBackground(Color.Black);
 
-            Raylib.BeginMode2D(camera);
+            Raylib.BeginMode2D(gameCamera.Camera);
 
             // Draw active nodes, beams, and radiance
             DrawNodeTree(rootNode);
