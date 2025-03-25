@@ -43,6 +43,23 @@ namespace SharkEngine.Gameplay
             return amount;
         }
 
+        public override void RepositionChildren()
+        {
+            var starChildren = Children.Where(c => c.Type == NodeType.Star).ToList();
+            int count = starChildren.Count;
+            if (count == 0) return;
+
+            for (int i = 0; i < count; i++)
+            {
+                float angle = MathF.PI * 2f * i / count;
+                Vector2 offset = new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * starChildren[i].BaseRadius;
+                starChildren[i].SetPosition(Position + offset);
+            }
+
+            // Let all children (of any type) reposition their children
+            foreach (var child in Children)
+                child.RepositionChildren();
+        }
         public override void Draw()
         {
             // Node body

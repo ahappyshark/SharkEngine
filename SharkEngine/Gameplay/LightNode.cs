@@ -13,11 +13,12 @@ namespace SharkEngine.Gameplay
 
     public abstract class LightNode
     {
-        public Vector2 Position { get; protected set; }
+        public Vector2 Position { get; private set; }
         public NodeType Type { get; protected set; }
         public float ParentRadius { get; private set; }
         public LightNode? Parent { get; private set; }
         public List<LightNode> Children { get; } = new();
+        public int Descendants { get; set; }
         public NodeState CurrentState { get; protected set; } = NodeState.Inactive;
         public Color CurrentColor => StateColors.TryGetValue(CurrentState, out var color)
             ? color
@@ -34,13 +35,18 @@ namespace SharkEngine.Gameplay
         public float BeamPulseTime { get; protected set; }
         public float BeamAlpha { get; protected set; }
         public float BeamThickness { get; protected set; }
+        public float CurrentOrbitRadius { get; protected set; } = 100f;
+        protected const float OrbitStep  = 50f;
 
         public LightNode(LightNode? parent = null)
         {
             Parent = parent;
             parent?.Children.Add(this);
             ParentRadius = parent?.GetChildRadius(this.Type) ?? 100f;
-            parent?.RepositionChildren();
+        }
+        public void SetPosition(Vector2 newPos)
+        {
+            Position = newPos;
         }
 
         public bool IsConnectedToRoot()
@@ -81,6 +87,23 @@ namespace SharkEngine.Gameplay
                 }
             }
         }
+        public int CountStarDescendants()
+        {
+            int count = 0;
+
+            foreach (var child in Children)
+            {
+                if (child.Type == NodeType.Star)
+                    count++;
+
+                // Recursively check this child's children
+                if (child is StarNode star)
+                    count += star.CountStarDescendants();
+            }
+
+            return count;
+        }
+
 
         public virtual void Destroy()
         {
@@ -89,7 +112,7 @@ namespace SharkEngine.Gameplay
                 child.Destroy();
             Children.Clear();
         }
-        public void RepositionChildren()
+        public virtual void RepositionChildren()
         {
             float angleStep = 360f / Children.Count;
             float angleOffset = 0f;

@@ -12,10 +12,6 @@ namespace SharkEngine.Scenes
         private RenderTexture2D sceneTexture;
         private RenderTexture2D lightMap;
         private NodeType currentSelectedType = NodeType.Star;
-        // 🔍 Preview state
-        private Vector2 previewPosition;
-        private bool previewValid = false;
-
         public override void Load()
         {
             sceneTexture = Raylib.LoadRenderTexture(GameConfig.ScreenWidth, GameConfig.ScreenHeight);
@@ -46,6 +42,7 @@ namespace SharkEngine.Scenes
                 Console.WriteLine("Mouse clicked.");
                 if (nodeTree.TryAddNode(mouseWorld, currentSelectedType)) {
                     Console.WriteLine("Node placed.");
+                    Console.WriteLine($"Current type: {currentSelectedType}");
                 }
             }            
         }
@@ -66,9 +63,6 @@ namespace SharkEngine.Scenes
             // Draw active nodes, beams, and radiance
             nodeTree.Draw();
 
-            // 🔍 Draw node placement preview
-            DrawPlacementPreview();
-
             Raylib.EndMode2D();
             Raylib.EndTextureMode();
 
@@ -77,14 +71,6 @@ namespace SharkEngine.Scenes
             Renderer.DrawRenderTexture(sceneTexture, 0, 0, Color.White);
             Raylib.DrawText($"Total Energy: {totalEnergy:F1}", 10, 40, 20, Color.White);
             Raylib.DrawText($"Node Type: {currentSelectedType}", 10, 70, 20, Color.White);
-        }
-        private void DrawPlacementPreview()
-        {
-            Color previewColor = previewValid
-                ? Raylib.Fade(Color.White, 0.4f)
-                : Raylib.Fade(Color.Red, 0.3f);
-
-            Raylib.DrawCircle((int)previewPosition.X, (int)previewPosition.Y, 50, previewColor);
         }
     }
 }

@@ -16,6 +16,7 @@ namespace SharkEngine.Gameplay
         public NodeTree() {
             originPosition = new Vector2(GameConfig.ScreenWidth / 2f, GameConfig.ScreenHeight / 2f);
             rootNode = NodeFactory.CreateNode(NodeType.Root);
+            rootNode.SetPosition(new Vector2(GameConfig.ScreenWidth / 2f, GameConfig.ScreenHeight / 2f));
             rootNode.Ignite();
             rootNode.Update(999);
         }
@@ -56,7 +57,30 @@ namespace SharkEngine.Gameplay
 
             var node = NodeFactory.CreateNode(newType, parent);
             node.Ignite();
+            RecalculateAll();
             return true;
+        }
+        public void RecalculateAll()
+        {
+            CountStarDescendants(rootNode);
+            rootNode.RepositionChildren(); // layout from root outward
+        }
+        public int CountStarDescendants(LightNode node)
+        {
+            int count = 0;
+
+            foreach (var child in node.Children)
+            {
+                int childDescendants = CountStarDescendants(child);
+                count += childDescendants;
+
+                // Only count this node if it's a Star
+                if (child.Type == NodeType.Star)
+                    count += 1;
+            }
+
+            node.Descendants = count;
+            return count;
         }
         public LightNode? GetClickedNode(Vector2 mouseWorldPos, float clickRadius = 30f) 
         {
@@ -70,44 +94,6 @@ namespace SharkEngine.Gameplay
             }
             Recurse(rootNode);
             return clickedNode;
-        }
-        // public LightNode? FindNearestActiveNode(Vector2 targetPos)
-        // {
-        //     LightNode? best = null;
-
-        //     void Recurse(LightNode current)
-        //     {
-        //         if (current.IsActive())
-        //         {
-        //             float dist = Vector2.Distance(current.Position, targetPos);
-        //             if (dist <= bestDist)
-        //             {
-        //                 best = current;
-        //                 bestDist = dist;
-        //             }
-        //         }
-
-        //         foreach (var child in current.Children)
-        //             Recurse(child);
-        //     }
-        //     Recurse(rootNode);
-        //     return best;
-        // }
-        public bool IsTooClose(Vector2 targetPos, float minSpacing) {
-            return IsTooCloseToExistingNode(rootNode, targetPos, minSpacing);
-        }
-        public bool IsTooCloseToExistingNode(LightNode node, Vector2 targetPos, float minSpacing)
-        {
-            if (Vector2.Distance(node.Position, targetPos) < minSpacing)
-                return true;
-
-            foreach (var child in node.Children)
-            {
-                if (IsTooCloseToExistingNode(child, targetPos, minSpacing))
-                    return true;
-            }
-
-            return false;
         }
     }
 }

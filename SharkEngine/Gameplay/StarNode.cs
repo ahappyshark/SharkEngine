@@ -75,5 +75,35 @@ namespace SharkEngine.Gameplay
                 (int)(a.A + (b.A - a.A) * t)
             );
         }
+        public override void RepositionChildren()
+        {
+            var starChildren = Children.Where(c => c.Type == NodeType.Star).ToList();
+            int count = starChildren.Count;
+            if (count == 0) return;
+
+            if (Parent is LightNode parent)
+            {
+                var directionToParent = Vector2.Normalize(Position - parent.Position);                
+                float distanceFromParent = BaseRadius + OrbitStep * MathF.Max(1, Descendants);                
+                SetPosition(parent.Position + directionToParent * distanceFromParent);
+            }
+            
+            float baseAngle = 0f;
+            if (Parent is LightNode p)
+            {
+                Vector2 toParent = Vector2.Normalize(p.Position - Position);
+                baseAngle = MathF.Atan2(toParent.Y, toParent.X); // 180° opposite of parent
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                float angle = baseAngle + MathF.PI * 2f * (i + 1) / (count + 1);
+                Vector2 offset = new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * starChildren[i].BaseRadius;
+                starChildren[i].SetPosition(Position + offset);
+            }
+
+            foreach (var child in Children)
+                child.RepositionChildren();
+        }
     }
 }
