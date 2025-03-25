@@ -10,6 +10,10 @@ namespace SharkEngine.Scenes
         LightNode rootNode;
         private Camera2D camera;
         private float cameraSpeed = 300f;
+        private float cameraZoom = 1.0f;
+        private const float ZoomSpeed = 0.1f;
+        private const float MinZoom = 0.25f;
+        private const float MaxZoom = 3.0f;
 
         private RenderTexture2D sceneTexture;
         private RenderTexture2D lightMap;
@@ -150,6 +154,28 @@ namespace SharkEngine.Scenes
 
             if (cameraMove != Vector2.Zero)
                 camera.Target += cameraMove * cameraSpeed * deltaTime;
+            
+            float wheel = Raylib.GetMouseWheelMove();
+
+            
+            if (wheel != 0)
+            {
+                // 1. Get the mouse position in world space before zoom
+                Vector2 mouseScreen = Raylib.GetMousePosition();
+                Vector2 mouseWorldBefore = Raylib.GetScreenToWorld2D(mouseScreen, camera);
+
+                // 2. Update zoom factor
+                cameraZoom += wheel * ZoomSpeed;
+                cameraZoom = Math.Clamp(cameraZoom, MinZoom, MaxZoom);
+                camera.Zoom = cameraZoom;
+
+                // 3. Get the world position under the mouse *after* zoom
+                Vector2 mouseWorldAfter = Raylib.GetScreenToWorld2D(mouseScreen, camera);
+
+                // 4. Adjust camera target to compensate
+                Vector2 delta = mouseWorldBefore - mouseWorldAfter;
+                camera.Target += delta;
+            }
         }
 
         public override void Draw()
